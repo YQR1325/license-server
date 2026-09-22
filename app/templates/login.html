@@ -1,0 +1,38 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - PaydayPact License</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, Arial; background: #0a0e27; color: #fff;
+               display: flex; justify-content: center; align-items: center;
+               height: 100vh; margin: 0; }
+        .box { background: #151a3d; padding: 40px; border-radius: 16px;
+               box-shadow: 0 20px 60px rgba(0,0,0,0.6); width: 380px;
+               border: 1px solid #2a3163; }
+        h1 { margin: 0 0 8px; font-size: 22px; text-align: center; }
+        p { text-align: center; color: #8892b0; margin: 0 0 24px; font-size: 13px; }
+        input { width: 100%; padding: 14px; margin: 8px 0; box-sizing: border-box;
+                border-radius: 8px; border: 1px solid #2a3163; background: #0a0e27;
+                color: #fff; font-size: 15px; }
+        input:focus { outline: none; border-color: #e94560; }
+        button { width: 100%; padding: 14px; margin-top: 12px; border: none;
+                 border-radius: 8px; background: #e94560; color: #fff;
+                 cursor: pointer; font-size: 16px; font-weight: bold; }
+        button:hover { background: #d63850; }
+        .error { color: #ff6b6b; text-align: center; margin-top: 14px; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>Panel Admin</h1>
+        <p>PaydayPact License Server</p>
+        <form method="post" action="/admin/login">
+            <input type="password" name="password" placeholder="Password" required autofocus>
+            <button type="submit">Entrar</button>
+        </form>
+        {% if error %}<div class="error">{{ error }}</div>{% endif %}
+    </div>
+</body>
+</html>

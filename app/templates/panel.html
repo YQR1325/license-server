@@ -1,0 +1,162 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Admin - Licencias</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, Arial; background: #0a0e27; color: #fff;
+               padding: 24px; margin: 0; }
+        h1 { color: #e94560; margin: 0 0 24px; }
+        h2 { font-size: 17px; margin: 0 0 16px; }
+        .container { max-width: 1400px; margin: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; }
+        .card { background: #151a3d; border-radius: 12px; padding: 24px;
+                margin-bottom: 20px; border: 1px solid #2a3163; }
+        input, select, textarea { padding: 11px; margin: 4px 6px 4px 0; border-radius: 8px;
+                        border: 1px solid #2a3163; background: #0a0e27; color: #fff;
+                        font-size: 14px; }
+        input:focus, select:focus { outline: none; border-color: #e94560; }
+        button { padding: 11px 22px; border: none; border-radius: 8px;
+                 background: #e94560; color: #fff; cursor: pointer;
+                 font-weight: bold; font-size: 14px; }
+        button:hover { background: #d63850; }
+        .btn-sec { background: #2a3163; }
+        .btn-sec:hover { background: #3a4287; }
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; }
+        th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #2a3163; }
+        th { background: #0a0e27; color: #8892b0; font-weight: 600;
+             text-transform: uppercase; font-size: 11px; letter-spacing: 1px; }
+        tr:hover td { background: #1a2050; }
+        .activa { color: #4ade80; font-weight: bold; }
+        .revocada { color: #f87171; font-weight: bold; }
+        .ok { color: #4ade80; background: #052e16; padding: 12px;
+              border-radius: 8px; margin-bottom: 16px; }
+        .err { color: #f87171; background: #3b0d0d; padding: 12px;
+               border-radius: 8px; margin-bottom: 16px; }
+        .small-btn { padding: 6px 12px; font-size: 12px; margin: 2px; }
+        .logout { color: #f87171; text-decoration: none; font-size: 14px; }
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+        .stat { background: #151a3d; padding: 20px; border-radius: 12px;
+                border: 1px solid #2a3163; text-align: center; }
+        .stat-num { font-size: 32px; font-weight: bold; color: #e94560; }
+        .stat-label { color: #8892b0; font-size: 13px; margin-top: 6px; }
+        .mono { font-family: 'Courier New', monospace; font-size: 11px; color: #8892b0; }
+        .search { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Panel de Licencias</h1>
+            <div>
+                <a href="/admin/exportar" class="logout" style="color:#4ade80; margin-right: 20px;">Exportar CSV</a>
+                <a href="/admin/logout" class="logout">Cerrar sesion</a>
+            </div>
+        </div>
+
+        {% if request.query_params.get('ok') %}
+            <div class="ok">Operacion exitosa: {{ request.query_params.get('ok') }}</div>
+        {% endif %}
+        {% if request.query_params.get('err') %}
+            <div class="err">Error: {{ request.query_params.get('err') }}</div>
+        {% endif %}
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-num">{{ stats.total }}</div>
+                <div class="stat-label">Total licencias</div>
+            </div>
+            <div class="stat">
+                <div class="stat-num" style="color: #4ade80;">{{ stats.activas }}</div>
+                <div class="stat-label">Activas</div>
+            </div>
+            <div class="stat">
+                <div class="stat-num" style="color: #f87171;">{{ stats.revocadas }}</div>
+                <div class="stat-label">Revocadas</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Crear nueva licencia</h2>
+            <form method="post" action="/admin/crear">
+                <input name="machine_id" placeholder="GUID de maquina (36 chars)" required
+                       style="width: 380px;" maxlength="36">
+                <input name="cliente" placeholder="Nombre del cliente">
+                <input name="email" placeholder="Email">
+                <input name="notas" placeholder="Notas">
+                <select name="dias_validez">
+                    <option value="30">30 dias</option>
+                    <option value="90">90 dias</option>
+                    <option value="180">180 dias</option>
+                    <option value="365" selected>1 ano</option>
+                    <option value="0">Permanente</option>
+                </select>
+                <button type="submit">Crear licencia</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Licencias ({{ licencias|length }})</h2>
+            <form method="get" action="/admin/panel" class="search">
+                <input name="q" placeholder="Buscar GUID, cliente o email..."
+                       value="{{ q }}" style="width: 320px;">
+                <select name="estado">
+                    <option value="" {% if not estado %}selected{% endif %}>Todos los estados</option>
+                    <option value="activa" {% if estado == 'activa' %}selected{% endif %}>Solo activas</option>
+                    <option value="revocada" {% if estado == 'revocada' %}selected{% endif %}>Solo revocadas</option>
+                    <option value="expirada" {% if estado == 'expirada' %}selected{% endif %}>Solo expiradas</option>
+                </select>
+                <button type="submit">Buscar</button>
+                <a href="/admin/panel"><button type="button" class="btn-sec">Limpiar</button></a>
+            </form>
+
+            <table>
+                <tr>
+                    <th>GUID</th>
+                    <th>Cliente</th>
+                    <th>Estado</th>
+                    <th>Expira</th>
+                    <th>Usos</th>
+                    <th>Ultimo uso</th>
+                    <th>Acciones</th>
+                </tr>
+                {% for l in licencias %}
+                <tr>
+                    <td class="mono">{{ l.machine_id }}</td>
+                    <td>
+                        <strong>{{ l.cliente or '-' }}</strong>
+                        {% if l.email %}<br><small class="mono">{{ l.email }}</small>{% endif %}
+                    </td>
+                    <td>
+                        {% if l.activa %}<span class="activa">ACTIVA</span>
+                        {% else %}<span class="revocada">REVOCADA</span>{% endif %}
+                    </td>
+                    <td>{{ l.fecha_expiracion.strftime('%Y-%m-%d') if l.fecha_expiracion else 'Nunca' }}</td>
+                    <td>{{ l.usos or 0 }}</td>
+                    <td class="mono">{{ l.ultimo_uso.strftime('%Y-%m-%d %H:%M') if l.ultimo_uso else '-' }}</td>
+                    <td>
+                        {% if l.activa %}
+                            <form method="post" action="/admin/revocar" style="display:inline;">
+                                <input type="hidden" name="machine_id" value="{{ l.machine_id }}">
+                                <button class="small-btn">Revocar</button>
+                            </form>
+                        {% else %}
+                            <form method="post" action="/admin/reactivar" style="display:inline;">
+                                <input type="hidden" name="machine_id" value="{{ l.machine_id }}">
+                                <button class="small-btn" style="background:#059669;">Reactivar</button>
+                            </form>
+                        {% endif %}
+                        <form method="post" action="/admin/eliminar" style="display:inline;"
+                              onsubmit="return confirm('Eliminar esta licencia?')">
+                            <input type="hidden" name="machine_id" value="{{ l.machine_id }}">
+                            <button class="small-btn" style="background:#7f1d1d;">X</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</body>
+</html>
