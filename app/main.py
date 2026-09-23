@@ -8,8 +8,6 @@ from fastapi import FastAPI, Request, HTTPException, Depends, Form
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from slowapi import _rate_limit_exceeded_handler
-from slowapi.errors import RateLimitExceeded
 from pydantic import BaseModel, Field
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
@@ -20,13 +18,10 @@ from app.auth import (
     generar_clave_licencia, verificar_password,
     crear_sesion_admin, validar_sesion_admin,
 )
-from app.security import limiter
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="PaydayPact License Server", version="3.0")
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Rutas ABSOLUTAS basadas en la ubicacion de este archivo
 BASE_DIR = Path(__file__).resolve().parent
@@ -118,7 +113,6 @@ def login_get(request: Request):
 
 
 @app.post("/admin/login", response_class=HTMLResponse)
-@limiter.limit("100/minute")
 def login_post(request: Request, password: str = Form(...)):
     if not verificar_password(password):
         return templates.TemplateResponse(
