@@ -57,7 +57,7 @@ class VerificarRequest(BaseModel):
 
 
 @app.post("/api/verificar")
-@limiter.limit("30/minute")
+@limiter.limit("500/minute")
 def verificar_licencia(request: Request, req: VerificarRequest, db: Session = Depends(get_db)):
     machine_id = req.machine_id.strip().upper()
     license_key = req.license_key.strip().upper()
@@ -118,7 +118,7 @@ def login_get(request: Request):
 
 
 @app.post("/admin/login", response_class=HTMLResponse)
-@limiter.limit("5/minute")
+@limiter.limit("100/minute")
 def login_post(request: Request, password: str = Form(...)):
     if not verificar_password(password):
         return templates.TemplateResponse(
