@@ -57,7 +57,7 @@ class VerificarRequest(BaseModel):
 
 
 @app.post("/api/verificar")
-@limiter.limit("500/minute")
+# rate limit removido para pruebas
 def verificar_licencia(request: Request, req: VerificarRequest, db: Session = Depends(get_db)):
     machine_id = req.machine_id.strip().upper()
     license_key = req.license_key.strip().upper()
