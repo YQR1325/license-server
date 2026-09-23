@@ -102,6 +102,22 @@ def requiere_admin(request: Request):
     return True
 
 
+
+
+@app.get("/api/debug/licencia/{machine_id}")
+def debug_licencia(machine_id: str, db: Session = Depends(get_db)):
+    """Devuelve la clave de una licencia (SOLO PARA DEBUG)."""
+    machine_id = machine_id.strip().upper()
+    lic = db.query(Licencia).filter(Licencia.machine_id == machine_id).first()
+    if not lic:
+        raise HTTPException(404, "No registrada")
+    return {
+        "machine_id": lic.machine_id,
+        "license_key": lic.license_key,
+        "activa": lic.activa,
+        "expira": lic.fecha_expiracion.isoformat() if lic.fecha_expiracion else None,
+    }
+
 @app.get("/", response_class=HTMLResponse)
 def root():
     return RedirectResponse("/admin/login")
