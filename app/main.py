@@ -1,4 +1,5 @@
-﻿import hmac
+﻿# Rebuild forzado: 20260923035025
+import hmac
 import csv
 import io
 import os
@@ -271,3 +272,4 @@ def admin_exportar(request: Request, db: Session = Depends(get_db)):
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=licencias.csv"},
     )
+
