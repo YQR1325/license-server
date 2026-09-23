@@ -6,18 +6,27 @@ from pathlib import Path
 from dotenv import load_dotenv
 from itsdangerous import URLSafeTimedSerializer
 
-# Cargar .env con ruta ABSOLUTA
+# Intentar cargar .env (no falla si no existe)
 env_path = Path(__file__).resolve().parent.parent / ".env"
-load_dotenv(dotenv_path=env_path)
+if env_path.exists():
+    load_dotenv(dotenv_path=env_path)
 
+# Leer variables de entorno
 SECRET_KEY = os.environ.get("PAYDAYPACT_SECRET")
-if not SECRET_KEY:
-    raise RuntimeError(
-        f"Falta PAYDAYPACT_SECRET. Buscando .env en: {env_path} "
-        f"(existe: {env_path.exists()})"
-    )
-
 ADMIN_PASSWORD_HASH = os.environ.get("ADMIN_PASSWORD_HASH", "")
+
+# Debug: mostrar todas las variables que empiezan con PAYDAY o ADMIN
+if not SECRET_KEY:
+    print("=== DEBUG: variables de entorno disponibles ===")
+    for k, v in sorted(os.environ.items()):
+        if "PAYDAY" in k.upper() or "ADMIN" in k.upper() or "SECRET" in k.upper():
+            print(f"  {k} = {v[:20]}...")
+    print("=== FIN DEBUG ===")
+    raise RuntimeError(
+        f"Falta PAYDAYPACT_SECRET. "
+        f"Variables PAYDAY* disponibles: "
+        f"{[k for k in os.environ if 'PAYDAY' in k.upper()]}"
+    )
 
 serializer = URLSafeTimedSerializer(SECRET_KEY, salt="admin-session")
 
